@@ -123,6 +123,13 @@ export const drawFormatB = async (
   });
   ctx.drawImage(templateImg, 0, 0, 723, 1024);
 
+  // 1.5 Capture the BUILD/SHIP/REPEAT sticker area before drawing the photo (Width 102 to cover X=12 to X=114 exactly)
+  const stickerX = 12;
+  const stickerY = 440;
+  const stickerW = 102;
+  const stickerH = 120;
+  const stickerData = ctx.getImageData(stickerX, stickerY, stickerW, stickerH);
+
   // 2. Draw user photo inside the circular frame (Center: 206, 446, Radius: 142 fits template perfectly)
   const photoX = 206;
   const photoY = 446;
@@ -150,40 +157,35 @@ export const drawFormatB = async (
   );
   ctx.restore();
 
+  // 2.5 Put the sticker and its original frame segments back on top of the photo
+  ctx.putImageData(stickerData, stickerX, stickerY);
+
   // 3. Clear and render text values to prevent overlapping with templates
   // details container width is 245px starting at X=450
   const detailX = 460;
-  const clearX = 450;
-  const clearW = 245;
   const maxTextW = 235;
 
   // Name
-  ctx.fillStyle = '#FDFBF9'; // template card details container background
-  ctx.fillRect(clearX, 290, clearW, 35);
   drawTextAutoScaled(
     ctx, 
     options.name.trim().toUpperCase(), 
-    detailX, 308, 
+    detailX, 315, 
     maxTextW, 26, 14, 
     '900', 'Outfit, sans-serif', 
     BRAND_COLORS.green, 'left'
   );
 
   // Stack / Role
-  ctx.fillStyle = '#FDFBF9';
-  ctx.fillRect(clearX, 360, clearW, 30);
   drawTextAutoScaled(
     ctx, 
     options.role.trim().toUpperCase(), 
-    detailX, 375, 
+    detailX, 383, 
     maxTextW, 20, 14, 
     '900', 'Outfit, sans-serif', 
     BRAND_COLORS.pink, 'left'
   );
 
   // Builder Title
-  ctx.fillStyle = '#FDFBF9';
-  ctx.fillRect(clearX, 428, clearW, 30);
   const rawTitle = options.builderTitle || getBuilderTitle(options.role);
   const titleText = `⚡ ${rawTitle.trim().toUpperCase()} ⚡`;
   
@@ -205,36 +207,31 @@ export const drawFormatB = async (
   let curX = detailX;
   
   ctx.fillStyle = BRAND_COLORS.pink;
-  ctx.fillText("⚡", curX, 444);
+  ctx.fillText("⚡", curX, 451);
   curX += ctx.measureText("⚡ ").width;
   
   ctx.fillStyle = BRAND_COLORS.green;
   const coreTitle = parts[1] || "";
-  ctx.fillText(coreTitle, curX, 444);
+  ctx.fillText(coreTitle, curX, 451);
   curX += ctx.measureText(coreTitle).width;
   
   ctx.fillStyle = BRAND_COLORS.pink;
-  ctx.fillText(" ⚡", curX, 444);
+  ctx.fillText(" ⚡", curX, 451);
   
   ctx.restore();
 
   // Location
-  ctx.fillStyle = '#FDFBF9';
-  ctx.fillRect(clearX, 493, clearW, 30);
   const locVal = (options.location || 'BENGALURU').trim().toUpperCase();
   drawTextAutoScaled(
     ctx, 
     locVal, 
-    detailX, 508, 
+    detailX, 517, 
     maxTextW, 20, 14, 
     '900', 'Outfit, sans-serif', 
     BRAND_COLORS.pink, 'left'
   );
 
   // Vibe / Fun Fact
-  ctx.fillStyle = '#FDFBF9';
-  ctx.fillRect(clearX, 558, clearW, 60);
-  
   const rawVibe = (options.vibe || 'BUILD ➔ SHIP ➔ REPEAT').trim().toUpperCase();
   ctx.save();
   ctx.fillStyle = BRAND_COLORS.green;
@@ -247,7 +244,7 @@ export const drawFormatB = async (
   
   if (vibeWidth <= maxTextW) {
     // Fits in a single line
-    drawTextAutoScaled(ctx, rawVibe, detailX, 586, maxTextW, 18, 14, '900', 'Outfit, sans-serif', BRAND_COLORS.green, 'left');
+    drawTextAutoScaled(ctx, rawVibe, detailX, 595, maxTextW, 18, 14, '900', 'Outfit, sans-serif', BRAND_COLORS.green, 'left');
   } else {
     // Split into two lines at space
     const words = rawVibe.split(' ');
@@ -281,8 +278,8 @@ export const drawFormatB = async (
     }
     
     const lh = vibeSize + 2; // line height spacing
-    ctx.fillText(line1, 460, 586 - lh/2);
-    ctx.fillText(line2, 460, 586 + lh/2);
+    ctx.fillText(line1, 460, 595 - lh/2);
+    ctx.fillText(line2, 460, 595 + lh/2);
   }
   ctx.restore();
 
